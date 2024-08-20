@@ -10,7 +10,7 @@ import { SpeedOptions } from "./SpeedOptions";
 import { Modal } from "./Modal";
 import { ColorPicker } from "./ColorPicker";
 
-const Duel = props => {
+const Duel = () => {
   const [ scoreA, setScoreA ] = useState(0);
   const [ scoreB, setScoreB ] = useState(0);
 
