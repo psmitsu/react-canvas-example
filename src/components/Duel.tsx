@@ -1,14 +1,10 @@
 import { useEffect, useState, useRef } from "react";
-import { DuelEngine, 
-  DEFAULT_HERO_SPEED, MAX_SPEED, MIN_SPEED, 
-  DEFAULT_SHOT_RATE, MIN_SHOT_RATE, MAX_SHOT_RATE, 
-  DEFAULT_A_COLOR,
-  DEFAULT_B_COLOR
-} from "../lib/engine";
+import { DuelEngine } from "../lib/engine";
 import { Score } from "./Score";
 import { SpeedOptions } from "./SpeedOptions";
 import { Modal } from "./Modal";
 import { ColorPicker } from "./ColorPicker";
+import { DEFAULT_A_COLOR, DEFAULT_B_COLOR, DEFAULT_HERO_SPEED, DEFAULT_SHOT_RATE, MAX_SHOT_RATE, MAX_SPEED, MIN_SHOT_RATE, MIN_SPEED } from "../lib/constants";
 
 const Duel = () => {
   const [ scoreA, setScoreA ] = useState(0);
@@ -28,7 +24,7 @@ const Duel = () => {
   const gRef = useRef<DuelEngine | null>(null);
 
   useEffect(() => {
-    console.log('useEffect fired');
+    // console.log('useEffect fired');
 
     if (cRef.current !== null) {
       const ctx = cRef.current.getContext("2d");

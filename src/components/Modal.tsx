@@ -5,7 +5,6 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, handleClose, children }) => {
-  console.log('isOpen', isOpen);
   return (
     <>
       { 

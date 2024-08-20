@@ -1,28 +1,7 @@
-const SIDE_LENGTH = 500;
-
-const MIN_SPEED=1;
-const MAX_SPEED=10;
-
-const HERO_RADIUS = 25;
-const DEFAULT_HERO_SPEED = 3;
-
-const DEFAULT_A_COLOR = '#aabbcc';
-const DEFAULT_B_COLOR = '#ccbbaa';
-
-const PROJECTILE_RADIUS = 10;
-const PROJECTILE_SPEED = 8;
-
-const MIN_SHOT_RATE=10;
-const MAX_SHOT_RATE=60;
-const DEFAULT_SHOT_RATE = 50;
-
-const MOUSE_RADIUS = 10;
-
-export { SIDE_LENGTH, 
-  MIN_SPEED, MAX_SPEED, DEFAULT_HERO_SPEED, 
-  MIN_SHOT_RATE, MAX_SHOT_RATE, DEFAULT_SHOT_RATE,
-  DEFAULT_A_COLOR, DEFAULT_B_COLOR,
-};
+import { DEFAULT_A_COLOR, DEFAULT_B_COLOR, DEFAULT_HERO_SPEED, DEFAULT_SHOT_RATE, HERO_RADIUS, PROJECTILE_SPEED, SIDE_LENGTH } from "./constants";
+import { HeroCircle } from "./hero";
+import { Mouse } from "./mouse";
+import { Projectile } from "./projectile";
 
 export class DuelEngine {
   private ctx: CanvasRenderingContext2D;
@@ -54,11 +33,10 @@ export class DuelEngine {
 
     ctx.canvas.onclick = (evt) => {
       this.mouse.setPosition(evt.offsetX, evt.offsetY);
-      console.log('click', this.mouse.getBox());
-      console.log('A box', this.heroA.getBox());
+      // console.log('click', this.mouse.getBox());
+      // console.log('A box', this.heroA.getBox());
 
       if (this.heroA.checkCollision(this.mouse)) {
-        console.log('AAA');
         onAClick();
       }
 
@@ -198,181 +176,4 @@ export class DuelEngine {
   cleanup() {
     cancelAnimationFrame(this.frameId);
   }
-}
-
-class HeroCircle implements IBoxable {
-  private x: number;
-  private y: number;
-  private absDeltaY: number;
-  private direction: 1 | -1;
-  private color: string | CanvasGradient | CanvasPattern; 
-
-  private shotRate: number;
-  private reloadCount: number;
-
-  constructor(
-    x: number,
-    y: number,
-    absDeltaY: number,
-    direction: 1 | -1,
-    color: string | CanvasGradient | CanvasPattern, 
-    shotRate: number,
-  ) {
-    this.x = x;
-    this.y = y;
-    this.absDeltaY = absDeltaY;
-    this.direction = direction;
-    this.color = color;
-
-    this.shotRate = shotRate;
-    this.reloadCount = shotRate;
-  }
-
-  setSpeed(absDeltaY: number) {
-    this.absDeltaY = absDeltaY;
-  }
-
-  setShotRate(rate: number) {
-    this.shotRate = rate;
-  }
-
-  setColor(color: string) {
-    this.color = color;
-  }
-
-  getColor() {
-    return this.color;
-  }
-
-  checkCollision(mouse: IBoxable) {
-    const mb = mouse.getBox();
-    return Math.hypot(this.x-mb.x, this.y-mb.y) <= (MOUSE_RADIUS*10 + mb.size);
-  }
-
-  checkCollisionOnSide(mouse: IBoxable) {
-    const mb = mouse.getBox();
-    const collision = Math.hypot(this.x-mb.x, this.y-mb.y) <= (MOUSE_RADIUS + mb.size);
-
-    if (collision) {
-      if (this.direction === 1 && this.y < mb.y) {
-        return true;
-      }
-      if (this.direction === -1 && this.y > mb.y) {
-        return true
-      }
-    }
-
-    return false;
-  }
-
-  changeDirection() {
-    this.direction *= -1;
-  }
-
-  canShoot(): boolean {
-    return this.reloadCount === 0;
-  }
-
-  getBox(): Box {
-    return { x: this.x, y: this.y, size: HERO_RADIUS };
-  }
-
-  update() {
-    this.y += this.absDeltaY*this.direction;
-
-    // check collisions
-    if ((this.y - HERO_RADIUS) < 0 )  {
-      this.direction = 1;
-    }
-
-    if ((this.y + HERO_RADIUS) > SIDE_LENGTH) {
-      this.direction = -1;
-    }
-
-    // reload
-    if (this.reloadCount === 0) {
-      this.reloadCount = this.shotRate;
-    } else {
-      this.reloadCount--;
-    }
-  }
-
-  render(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
-    ctx.fillStyle = this.color;
-    ctx.arc(this.x, this.y, HERO_RADIUS, 0, 2*Math.PI);
-    ctx.fill();
-  }
-}
-
-class Projectile implements IBoxable {
-  private x: number;
-  private y: number;
-  private absDeltaX: number;
-  private direction: 1 | -1;
-  private color: string | CanvasGradient | CanvasPattern; 
-
-  constructor(
-    x: number,
-    y: number,
-    absDeltaX: number,
-    direction: 1 | -1,
-    color: string | CanvasGradient | CanvasPattern, 
-  ) {
-    this.x = x;
-    this.y = y;
-    this.absDeltaX = absDeltaX;
-    this.direction = direction;
-    this.color = color;
-  }
-
-  checkCollision(hero: IBoxable) {
-    const hb = hero.getBox();
-    // console.log(Math.hypot(this.x-hb.x, this.y-hb.y), (PROJECTILE_RADIUS + hb.size)**2);
-    return Math.hypot(this.x-hb.x, this.y-hb.y) <= Math.hypot(PROJECTILE_RADIUS + hb.size);
-  }
-
-  getBox(): Box {
-    return { x: this.x, y: this.y, size: HERO_RADIUS };
-  }
-
-  update() {
-    this.x += this.absDeltaX*this.direction;
-  }
-
-  render(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
-    ctx.fillStyle = this.color;
-    ctx.arc(this.x, this.y, PROJECTILE_RADIUS, 0, 2*Math.PI);
-    ctx.fill();
-  }
-}
-
-class Mouse implements IBoxable {
-  private x: number;
-  private y: number;
-
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-
-  setPosition(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-
-  getBox(): Box {
-    return {x: this.x, y: this.y, size: MOUSE_RADIUS};
-  }
-}
-
-interface Box {
-  x: number;
-  y: number;
-  size: number;
-}
-
-interface IBoxable {
-  getBox(): Box
 }
